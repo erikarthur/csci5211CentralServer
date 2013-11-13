@@ -75,20 +75,23 @@ namespace socketSrv
                     //IPAddress messageIP = new IPAddress();
                     byte[] addressBytes = new byte[4];
                     byte[] portBytes = new byte[sizeof(Int32)];
+					byte[] cmdBytes = new byte[sizeof(Int32)];
                     System.Buffer.BlockCopy(netMessage, 4, addressBytes, 0, 4);
                     System.Buffer.BlockCopy(netMessage, 8, portBytes, 0, 4);
+					System.Buffer.BlockCopy(netMessage, 12, cmdBytes, 0, 4);
 
                     IPAddress messageIP = new IPAddress(addressBytes);
                     Int32 port = BitConverter.ToInt32(portBytes, 0);
+					Int32 cmd = BitConverter.ToInt32(portBytes, 0);
                     //BitConverter.
                     ////convert endianness if necessary
                     //if (BitConverter.IsLittleEndian)
                     //    Array.Reverse(message);  //convert from big endian to little endian
 
                     //convert byte array to memorystream for deserialization
-                    MemoryStream stream = new MemoryStream();
+                    //MemoryStream stream = new MemoryStream();
                     //bytesRead = 
-                    stream.Write(message, 0, bytesRead - 4);
+                    //stream.Write(message, 0, bytesRead - 4);
 
                     //peerInstance peer = new peerInstance();
                     //peer.peerIP = address[1];
@@ -96,76 +99,108 @@ namespace socketSrv
                     //peer.peerPort = 3000 + RNG.Next(3000);
 
                     //MemoryStream clientMsgStream = SerializeToStream(peer);
+					switch (cmd)
+					{
+					case 0:
+						peerInstance newPeer = new peerInstance(); 
 
-                    peerInstance newPeer = new peerInstance(); 
-                    //newPeer = (peerInstance)DeserializeFromStream(stream);
-                    newPeer.peerIP = messageIP;
-                    newPeer.peerPort = port;
-                    //add peer and check peer count
-                    //assuming peer hasn't been added previously
+						newPeer.peerIP = messageIP;
+						newPeer.peerPort = port;
+						//add peer and check peer count
+						//assuming peer hasn't been added previously
 
-                    if (peerList.Count() < 2)
-                        peerNumber = 0;
-                    else
-                        peerNumber = randomNumberGenerator.Next(peerList.Count());
+						if (peerList.Count() < 2)
+							peerNumber = 0;
+						else
+							peerNumber = randomNumberGenerator.Next(peerList.Count());
+
+						//add the peer to peerList
+						peerList.Add(new peerInstance());
+						int newPeerCnt = peerList.Count()-1;
+
+						peerList[newPeerCnt].peerIP = newPeer.peerIP;
+						//peerList[newPeerCnt].peerHostname = newPeer.peerHostname;
+						peerList[newPeerCnt].peerPort = newPeer.peerPort;
+
+						//create peer variable to send back to client
+						peerInstance peerMsgToClient = new peerInstance();
+
+						peerMsgToClient.peerIP = peerList[peerNumber].peerIP;
+						//peerMsgToClient.peerHostname = peerList[peerNumber].peerHostname;
+						peerMsgToClient.peerPort = peerList[peerNumber].peerPort;
+						Console.WriteLine("----------------New Connection-------------");
+						Console.WriteLine(peerList[peerNumber].peerIP + ", " + peerList[peerNumber].peerPort);
+						Console.WriteLine("-------------------------------------------");
+
+						addressBytes = peerList[peerNumber].peerIP.GetAddressBytes();
+						portBytes = BitConverter.GetBytes(peerList[peerNumber].peerPort);
+						int response = 0;
+						cmdBytes = BitConverter.GetBytes(response);
+
+						int clientMsgStreamLength = (int)(addressBytes.Length + portBytes.Length + sizeof(Int32) + sizeof(Int32));
+
+						//copy to byte array
+						byte[] buffer = new byte[4096];  //add 4 bytes for the message length at the front
+
+						byte[] intBytes = BitConverter.GetBytes(clientMsgStreamLength);
+
+						System.Buffer.BlockCopy(intBytes, 0, buffer, 0, 4);  //prepends length to buffer
+						System.Buffer.BlockCopy(addressBytes, 0, buffer, 4, addressBytes.Length);
+						System.Buffer.BlockCopy(portBytes, 0, buffer, 4 + addressBytes.Length, portBytes.Length);
+						System.Buffer.BlockCopy(cmdBytes, 0, buffer, 4 + addressBytes.Length + portBytes.Length, cmdBytes.Length);
+						clientStream.Write(buffer, 0, clientMsgStreamLength);
+						clientStream.Flush();
+						break;
+
+					case 1:
+						int i;
+						for (i=0;i<peerList.Count();i++)
+						{
+							if ((peerList[i].peerIP == messageIP) && (peerList[i].peerPort == port))
+								break;
+						}
+
+						//i now contains the peerNumber to remove
+						if (i > peerList.Count())
+						{
+							//error
+							Console.WriteLine("Peer not found");
+						}
+						else
+						{
+							peerNumber = i;
+							addressBytes = peerList[peerNumber].peerIP.GetAddressBytes();
+							portBytes = BitConverter.GetBytes(peerList[peerNumber].peerPort);
+							response = 1;
+							cmdBytes = BitConverter.GetBytes(response);
+
+							clientMsgStreamLength = (int)(addressBytes.Length + portBytes.Length + sizeof(Int32) + sizeof(Int32));
+
+							//copy to byte array
+							buffer = new byte[4096];  //add 4 bytes for the message length at the front
+
+							intBytes = BitConverter.GetBytes(clientMsgStreamLength);
+
+							System.Buffer.BlockCopy(intBytes, 0, buffer, 0, 4);  //prepends length to buffer
+							System.Buffer.BlockCopy(addressBytes, 0, buffer, 4, addressBytes.Length);
+							System.Buffer.BlockCopy(portBytes, 0, buffer, 4 + addressBytes.Length, portBytes.Length);
+							System.Buffer.BlockCopy(cmdBytes, 0, buffer, 4 + addressBytes.Length + portBytes.Length, cmdBytes.Length);
+							clientStream.Write(buffer, 0, clientMsgStreamLength);
+							clientStream.Flush();
+
+							Console.WriteLine("----------------Removed Connection-------------");
+							Console.WriteLine(peerList[peerNumber].peerIP + ", " + peerList[peerNumber].peerPort);
+							Console.WriteLine("-------------------------------------------");
+							peerList.RemoveAt(peerNumber);
+
+						}
+						break;
+					
+					default:
+						//msg other than 1 or 0.  probably should assert or something.
+						break;
+					}
                     
-                    //add the peer to peerList
-                    peerList.Add(new peerInstance());
-                    int newPeerCnt = peerList.Count()-1;
-
-                    peerList[newPeerCnt].peerIP = newPeer.peerIP;
-                    //peerList[newPeerCnt].peerHostname = newPeer.peerHostname;
-                    peerList[newPeerCnt].peerPort = newPeer.peerPort;
-
-                    //create peer variable to send back to client
-                    peerInstance peerMsgToClient = new peerInstance();
-                    
-                    peerMsgToClient.peerIP = peerList[peerNumber].peerIP;
-                    //peerMsgToClient.peerHostname = peerList[peerNumber].peerHostname;
-                    peerMsgToClient.peerPort = peerList[peerNumber].peerPort;
-                    Console.WriteLine("----------------New Connection-------------");
-                    Console.WriteLine(peerList[peerNumber].peerIP + ", " + peerList[peerNumber].peerPort);
-                    Console.WriteLine("-------------------------------------------");
-
-                    addressBytes = peerList[peerNumber].peerIP.GetAddressBytes();
-                    portBytes = BitConverter.GetBytes(peerList[peerNumber].peerPort);
-
-                    //MemoryStream clientMsgStream = SerializeToStream(peer);
-                    int clientMsgStreamLength = (int)(addressBytes.Length + portBytes.Length + sizeof(Int32));
-
-                    //peerInstance testPeer = (peerInstance)DeserializeFromStream(clientMsgStream);
-
-                    //byte [] tempBuffer = new byte[clientMsgStreamLength];
-
-                    //copy to byte array
-                    byte[] buffer = new byte[4096];  //add 4 bytes for the message length at the front
-                    //int tmpCnt = clientMsgStreamLength - 4;
-                    //tempBuffer = clientMsgStream.GetBuffer();
-
-                    byte[] intBytes = BitConverter.GetBytes(clientMsgStreamLength);
-
-                    System.Buffer.BlockCopy(intBytes, 0, buffer, 0, 4);  //prepends length to buffer
-                    System.Buffer.BlockCopy(addressBytes, 0, buffer, 4, addressBytes.Length);
-                    System.Buffer.BlockCopy(portBytes, 0, buffer, 4 + addressBytes.Length, portBytes.Length);
-
-
-                    ////serialize the peerMsgToClient
-                    //MemoryStream clientMsgStream = SerializeToStream(peerMsgToClient);
-                    //int clientMsgStreamLength = (int)clientMsgStream.Length;
-
-                    ////copy to byte array
-                    //byte[] buffer = new byte[clientMsgStreamLength+4];  //add 4 bytes for the message length at the front
-                    //int bytesCopied = clientMsgStream.Read(buffer, 4, clientMsgStreamLength);
-
-                    //byte[] intBytes = BitConverter.GetBytes(clientMsgStreamLength);
-
-                    //System.Buffer.BlockCopy(intBytes, 0, buffer, 0, 4);  //prepends length to buffer
-
-                    ////if (BitConverter.IsLittleEndian)
-                    ////    Array.Reverse(buffer);  //convert from little endian to big endian, always putting on the wire in big endian mode
-
-                    clientStream.Write(buffer, 0, clientMsgStreamLength);
-                    clientStream.Flush();
                 }
                 catch
                 {

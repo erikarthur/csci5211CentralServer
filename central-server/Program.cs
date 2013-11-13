@@ -119,17 +119,17 @@ namespace socketSrv
 						int newPeerCnt = peerList.Count()-1;
 
 						peerList[newPeerCnt].peerIP = newPeer.peerIP;
-						//peerList[newPeerCnt].peerHostname = newPeer.peerHostname;
+						
 						peerList[newPeerCnt].peerPort = newPeer.peerPort;
 
 						//create peer variable to send back to client
 						peerInstance peerMsgToClient = new peerInstance();
 
 						peerMsgToClient.peerIP = peerList[peerNumber].peerIP;
-						//peerMsgToClient.peerHostname = peerList[peerNumber].peerHostname;
+						
 						peerMsgToClient.peerPort = peerList[peerNumber].peerPort;
 						Console.WriteLine("----------------New Connection-------------");
-						Console.WriteLine(peerList[peerNumber].peerIP + ", " + peerList[peerNumber].peerPort);
+						Console.WriteLine(peerList[newPeerCnt].peerIP + ", Server Port: " + peerList[newPeerCnt].peerPort);
 						Console.WriteLine("-------------------------------------------");
 
 						addressBytes = peerList[peerNumber].peerIP.GetAddressBytes();
@@ -172,8 +172,8 @@ namespace socketSrv
 						else
 						{
 							peerNumber = i;
-							addressBytes = BitConverter.GetBytes(0);  //peerList[peerNumber].peerIP.GetAddressBytes();
-							portBytes = BitConverter.GetBytes(0); //BitConverter.GetBytes(peerList[peerNumber].peerPort);
+							addressBytes = peerList[peerNumber].peerIP.GetAddressBytes();
+							portBytes = BitConverter.GetBytes(peerList[peerNumber].peerPort);
 							response = 0;
 							cmdBytes = BitConverter.GetBytes(response);
 
@@ -192,7 +192,7 @@ namespace socketSrv
 							clientStream.Flush();
 
 							Console.WriteLine("----------------Removed Connection-------------");
-							Console.WriteLine(peerList[peerNumber].peerIP + ", " + peerList[peerNumber].peerPort);
+							Console.WriteLine(peerList[peerNumber].peerIP + ", Server Port: " + peerList[peerNumber].peerPort);
 							Console.WriteLine("-------------------------------------------");
 							peerList.RemoveAt(peerNumber);
 

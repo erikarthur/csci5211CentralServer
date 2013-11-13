@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "central-server", "central-server\central-server.csproj", "{F55D5826-CFE1-44E0-8BF2-288E110ECF3F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F55D5826-CFE1-44E0-8BF2-288E110ECF3F}.Debug|x86.ActiveCfg = Debug|x86
+		{F55D5826-CFE1-44E0-8BF2-288E110ECF3F}.Debug|x86.Build.0 = Debug|x86
+		{F55D5826-CFE1-44E0-8BF2-288E110ECF3F}.Release|x86.ActiveCfg = Release|x86
+		{F55D5826-CFE1-44E0-8BF2-288E110ECF3F}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		StartupItem = central-server\central-server.csproj
+	EndGlobalSection
+EndGlobal

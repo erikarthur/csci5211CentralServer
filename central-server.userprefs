@@ -1,0 +1,15 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="central-server/Program.cs">
+    <Files>
+      <File FileName="central-server/Program.cs" Line="23" Column="64" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches>
+    <Watch file="../../csci5211/clientExperiment/clientExperiment/client.cs" line="75" offsetX="590" offsetY="1258" expression="ackMessage" liveUpdate="False" />
+    <Watch file="../../csci5211/clientExperiment/clientExperiment/client.cs" line="76" offsetX="526" offsetY="1275" expression="ackMessage" liveUpdate="False" />
+  </MonoDevelop.Ide.DebuggingService.PinnedWatches>
+</Properties>

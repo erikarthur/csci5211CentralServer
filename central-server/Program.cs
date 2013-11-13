@@ -82,7 +82,7 @@ namespace socketSrv
 
                     IPAddress messageIP = new IPAddress(addressBytes);
                     Int32 port = BitConverter.ToInt32(portBytes, 0);
-					Int32 cmd = BitConverter.ToInt32(portBytes, 0);
+					Int32 cmd = BitConverter.ToInt32(cmdBytes, 0);
                     //BitConverter.
                     ////convert endianness if necessary
                     //if (BitConverter.IsLittleEndian)

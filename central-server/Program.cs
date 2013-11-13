@@ -40,7 +40,7 @@ namespace socketSrv
             int bytesRead, nextMsgBytesRead;
 
             int messageBytes = 0;
-
+			clientStream.ReadTimeout = System.Threading.Timeout.Infinite;
             while (true)
             {
                 bytesRead = 0;
@@ -156,8 +156,11 @@ namespace socketSrv
 						int i;
 						for (i=0;i<peerList.Count();i++)
 						{
-							if ((peerList[i].peerIP == messageIP) && (peerList[i].peerPort == port))
+							if ((peerList[i].peerIP.Address == messageIP.Address) && (peerList[i].peerPort == port))
+							{
+								peerNumber = i;
 								break;
+							}
 						}
 
 						//i now contains the peerNumber to remove
@@ -169,9 +172,9 @@ namespace socketSrv
 						else
 						{
 							peerNumber = i;
-							addressBytes = peerList[peerNumber].peerIP.GetAddressBytes();
-							portBytes = BitConverter.GetBytes(peerList[peerNumber].peerPort);
-							response = 1;
+							addressBytes = BitConverter.GetBytes(0);  //peerList[peerNumber].peerIP.GetAddressBytes();
+							portBytes = BitConverter.GetBytes(0); //BitConverter.GetBytes(peerList[peerNumber].peerPort);
+							response = 0;
 							cmdBytes = BitConverter.GetBytes(response);
 
 							clientMsgStreamLength = (int)(addressBytes.Length + portBytes.Length + sizeof(Int32) + sizeof(Int32));
